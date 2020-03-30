@@ -7,18 +7,30 @@ services:
     restart: always
     environment:
       - sonar.jdbc.url=jdbc:postgresql://sonarqube-db:5432/sonar
+      - sonar.jdbc.username=sonar
+      - sonar.jdbc.password=sonar
       # Settings for nginx reverse proxy.
       - VIRTUAL_HOST=tomokazu-lab.net
       - VIRTUAL_PORT=9000
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       # Settings for Let's Encrypt.
       - LETSENCRYPT_HOST=tomokazu-lab.net
       - LETSENCRYPT_EMAIL=set.tomokazu@gmail.com
       # Settings for test.
       - LETSENCRYPT_TEST=true
+    ports:
+      - 9000:9000
     volumes:
       - sonarqube-conf:/opt/sonarqube/conf
       - sonarqube-data:/opt/sonarqube/data
       - sonarqube-extensions:/opt/sonarqube/extensions
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     depends_on:
       - sonarqube-db
     networks:
@@ -26,7 +38,7 @@ services:
 
   sonarqube-db:
     container_name: sonarqube-db
-    image: postgres:12.1
+    image: postgres:12.2
     restart: always
     environment:
       - POSTGRES_USER=sonar
